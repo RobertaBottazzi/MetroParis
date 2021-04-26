@@ -9,6 +9,7 @@ import java.util.List;
 
 import com.javadocmd.simplelatlng.LatLng;
 
+import it.polito.tdp.metroparis.model.Connessione;
 import it.polito.tdp.metroparis.model.Fermata;
 import it.polito.tdp.metroparis.model.Linea;
 
@@ -66,6 +67,76 @@ public class MetroDAO {
 		}
 
 		return linee;
+	}
+
+	public boolean fermateCollegate(Fermata f1, Fermata f2) {
+		final String sql = "SELECT COUNT(*) AS cnt "
+				+ "FROM connessione "
+				+ "WHERE (id_stazP=? AND id_stazA=?) OR (id_stazP=? AND id_stazA=?) ";
+
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, f1.getIdFermata());
+			st.setInt(2, f2.getIdFermata());
+			st.setInt(3, f2.getIdFermata());
+			st.setInt(4, f1.getIdFermata());			
+			ResultSet rs = st.executeQuery();
+			
+			rs.first();
+			int conteggio=rs.getInt("cnt");
+			
+			st.close();
+			conn.close();
+			return (conteggio>0);
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Errore di connessione al Database.");
+		}
+}
+	public List<Connessione> getAllConnessioni(List<Fermata> fermate){
+		final String sql = "SELECT id_connessione, id_linea, id_stazP, id_stazA "
+				+ "FROM connessione "
+				+ "WHERE id_stazP>id_stazA "; //se ho una coppia di valori uguali tipo (2,4) e (4,2) ne prende uno solo
+		
+		List<Connessione> result = new ArrayList<>();
+		
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);			
+			ResultSet rs = st.executeQuery();
+			
+			while(rs.next()) {
+				
+				int id_partenza= rs.getInt("id_stazP");
+				Fermata fermata_partenza=null;
+				int id_arrivo= rs.getInt("id_stazA");
+				Fermata fermata_arrivo=null;
+				for(Fermata f:fermate) {
+					if(f.getIdFermata()==id_partenza)
+						fermata_partenza=f;
+										
+				}
+				for(Fermata f:fermate) {
+					if(f.getIdFermata()==id_arrivo)
+						fermata_arrivo=f;										
+				}
+				
+				Connessione c= new Connessione(rs.getInt("id_connessione"), null, fermata_partenza, fermata_arrivo);
+				result.add(c);				
+			}
+			
+			st.close();
+			conn.close();
+			return result;			
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Errore di connessione al Database.");
+		}		
+		
+		
 	}
 
 
