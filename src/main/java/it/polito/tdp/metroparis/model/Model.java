@@ -9,6 +9,7 @@ import org.jgrapht.Graphs;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.traverse.BreadthFirstIterator;
+import org.jgrapht.traverse.DepthFirstIterator;
 
 import it.polito.tdp.metroparis.db.MetroDAO;
 
@@ -75,6 +76,8 @@ public class Model {
 			Fermata f= bvf.next(); //prendo il vertice da scoprire
 			result.add(f); //lo aggiungo alla lista
 		}
+		//lo posso fare anche con una visita in profondità
+		//DepthFirstIterator<Fermata,DefaultEdge> dvf= new DepthFirstIterator<>(this.grafo,partenza);
 		return result;
 	}
 	
